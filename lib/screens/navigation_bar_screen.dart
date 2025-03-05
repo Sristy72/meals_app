@@ -44,9 +44,10 @@ class _NavigationBarScreenState extends State<NavigationBarScreen> {
    }
  }
 
- onSelectDrawer(String identifier) {
+ onSelectDrawer(String identifier) async {
+   Navigator.pop(context);
     if (identifier == 'filter') {
-      Navigator.push(
+      final result = await Navigator.push<Map<filters, bool>>(
         context,
         MaterialPageRoute(
           builder: (ctx) {
@@ -54,7 +55,7 @@ class _NavigationBarScreenState extends State<NavigationBarScreen> {
           },
         ),
       );
-    } else {}
+    }
   }
 
   int _selectedPageIndex = 0;
