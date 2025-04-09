@@ -1,31 +1,48 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../models/meals.dart';
+import '../provider/favorites_provider.dart';
 
-class MealDetailScreen extends StatelessWidget {
-  const MealDetailScreen({super.key, required this.meals, required this.onToggleFavorite});
+class MealDetailScreen extends ConsumerWidget {
+  const MealDetailScreen({super.key, required this.meals,});
   final Meal meals;
-  final Function(Meal meal) onToggleFavorite;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final favoriteMeals = ref.watch(favoriteMealsProvider);
+    final isFavorite = favoriteMeals.contains(meals);
+
     return Scaffold(
       appBar: AppBar(
           title: Text(meals.title),
         actions: [
           IconButton(onPressed: (){
-            onToggleFavorite(meals);
-          }, icon: Icon(Icons.star))
+            final wasAdded = ref.read(favoriteMealsProvider.notifier). toggleMealFavoritesStatus(meals);
+            ScaffoldMessenger.of(context).clearSnackBars();
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(wasAdded ? 'Meal Added' : 'Meal Removed'),
+              ),
+            );
+          }, icon: AnimatedSwitcher(duration: Duration(milliseconds: 300),
+            transitionBuilder: (child, animation) {
+              return RotationTransition(turns: animation, child: child,);
+            },
+            child: Icon(isFavorite ? Icons.star : Icons.star_border, key: ValueKey(isFavorite),),) )
         ],
       ),
       body: SingleChildScrollView(
         child: Column(
           children: [
-            Image.network(
-              meals.imageUrl,
-              height: 300,
-              width: double.infinity,
-              fit: BoxFit.cover,
+            Hero(
+              tag: meals.id,
+              child: Image.network(
+                meals.imageUrl,
+                height: 300,
+                width: double.infinity,
+                fit: BoxFit.cover,
+              ),
             ),
         
             SizedBox(height: 14,),
